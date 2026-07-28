@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Registro B&B</title>
+</head>
+<body>
+<style>
+:root{
+  --paper:#FBF7F0; --surface:#FFFFFF; --surface-2:#F3ECDF; --surface-3:#EDE4D3;
+  --ink:#2B2419; --ink-soft:#7A6F5C; --ink-faint:#A89C86;
+  --line:#E4D9C6; --line-soft:#EFE7D8;
+  --accent:#1C6B57; --accent-ink:#124a3c;
+  --dir:#2E7D52; --dir-bg:#E7F1E6; --dir-ink:#1c5133;
+  --bk:#2C5FA0; --bk-bg:#E7EEF8; --bk-ink:#1c3f6e;
+  --air:#C9503F; --air-bg:#FaeAe6; --air-ink:#8a3125;
+  --warn:#B0791A;
+  --wknd:#FBF1E6;
+  --wk-ven:#A9E4CE;--wk-sab:#F6E68A;--wk-dom:#F6A6A6;
+  --r1:#FBE4E8;--r2:#FCE9DA;--r3:#FBF3D2;--r4:#E9F3D6;--r5:#D8F0E6;--r6:#FFFFFF;--r7:#E2E7F7;--r8:#EBE2F5;--r9:#F6E1EF;
+  --grid:#1f1a12;
+  --radius:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.app{font-family:var(--font);color:var(--ink);background:var(--paper);min-height:100vh;max-width:760px;margin:0 auto;padding-bottom:78px;line-height:1.4}
+.app *::selection{background:var(--accent);color:#fff}
+
+/* Header */
+.top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:1px solid var(--line);padding:12px 14px 10px}
+.brand{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.brand .dot{width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0}
+.brand h1{font-size:16px;font-weight:600;margin:0;letter-spacing:-.2px}
+.brand p{font-size:11.5px;color:var(--ink-soft);margin:1px 0 0}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.monthbar .mtitle{font-size:19px;font-weight:600;letter-spacing:-.3px;text-transform:capitalize}
+.monthbar .mtitle span{color:var(--ink-soft);font-weight:400}
+.navbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.navbtn:active{transform:scale(.94)}
+.mnav{display:flex;gap:6px;align-items:center}
+.modebtn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.modebtn:active{transform:scale(.96)}
+.modebtn svg{width:16px;height:16px}
+
+/* Ledger grid */
+.gridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0}
+.gridwrap.pan{overflow-x:hidden}
+table.ledger{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+.ledger.com{width:max-content;min-width:100%}
+.ledger.pan{width:100%;table-layout:fixed}
+.ledger th,.ledger td{border-right:1px solid var(--grid);border-bottom:1px solid var(--line);padding:0;vertical-align:middle;overflow:hidden}
+.ledger .col-day{border-right:1px solid var(--grid)}
+.ledger thead th{position:sticky;top:0;z-index:8;background:var(--surface-2);font-weight:700;color:var(--ink);text-align:center;white-space:nowrap}
+.ledger.com thead th{font-size:11px;padding:7px 4px}
+.ledger.pan thead th{font-size:9px;padding:5px 1px}
+.ledger thead th.rh1{background:var(--r1)}.ledger thead th.rh2{background:var(--r2)}.ledger thead th.rh3{background:var(--r3)}.ledger thead th.rh4{background:var(--r4)}.ledger thead th.rh5{background:var(--r5)}.ledger thead th.rh6{background:var(--r6)}.ledger thead th.rh7{background:var(--r7)}.ledger thead th.rh8{background:var(--r8)}.ledger thead th.rh9{background:var(--r9)}
+.col-day{position:sticky;left:0;z-index:9;background:var(--surface-2)}
+.ledger.com .col-day{min-width:46px;width:46px}
+.ledger.pan .col-day{width:24px}
+thead .col-day,thead .tot{z-index:12}
+.daycell{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ledger.com .daycell{padding:4px 0;min-height:46px}
+.ledger.pan .daycell{padding:2px 0;min-height:30px}
+.daycell .dn{font-weight:700}
+.ledger.com .daycell .dn{font-size:15px}
+.ledger.pan .daycell .dn{font-size:11px}
+.daycell .dw{color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px}
+.ledger.com .daycell .dw{font-size:9.5px}
+.ledger.pan .daycell .dw{font-size:7.5px}
+tr.wk-ven .col-day{background:var(--wk-ven)} tr.wk-sab .col-day{background:var(--wk-sab)} tr.wk-dom .col-day{background:var(--wk-dom)}
+tr.wk-ven .col-day .dw,tr.wk-sab .col-day .dw,tr.wk-dom .col-day .dw{color:var(--ink-soft)}
+tbody tr.today .daycell .dn{background:var(--accent);color:#fff;border-radius:7px;padding:0 6px}
+
+.cell{cursor:pointer;position:relative;vertical-align:middle}
+.cell.r1{background:var(--r1)}.cell.r2{background:var(--r2)}.cell.r3{background:var(--r3)}.cell.r4{background:var(--r4)}.cell.r5{background:var(--r5)}.cell.r6{background:var(--r6)}.cell.r7{background:var(--r7)}.cell.r8{background:var(--r8)}.cell.r9{background:var(--r9)}
+.cell:active{filter:brightness(.95)}
+.book{display:flex;flex-direction:column;justify-content:center;line-height:1.12}
+.ledger.com .book{min-height:42px;padding:3px 5px}
+.ledger.pan .book{min-height:28px;padding:1px 2px}
+.book .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px;color:var(--ink)}
+.ledger.com .book .nm{font-size:12.5px}
+.ledger.pan .book .nm{font-size:8.5px;gap:1px}
+.center-room .book .nm{font-weight:800}
+.book .nm .ppl{font-weight:700;opacity:.55}
+.ledger.com .book .nm .ppl{font-size:10px}
+.ledger.pan .book .nm .ppl{font-size:7.5px}
+.book .meta{display:flex;align-items:center;gap:3px;margin-top:1px}
+.ledger.com .book .meta{font-size:10.5px}
+.ledger.pan .book .meta{font-size:8px;gap:2px;margin-top:0}
+.book .eur{font-weight:700;color:var(--ink)}
+.chip{font-weight:700;letter-spacing:.2px;color:#fff}
+.ledger.com .chip{font-size:8.5px;padding:1px 5px;border-radius:20px}
+.ledger.pan .chip{font-size:6.5px;padding:0 2px;border-radius:3px}
+.chip.cont{background:var(--dir)} .chip.booking{background:var(--bk)} .chip.airbnb{background:var(--air)}
+.book.mid .nm,.book.mid .meta{opacity:.45}
+.book .cont-mark{color:var(--ink-faint);font-weight:700}
+.pk{font-weight:800;background:#d6342a;color:#fff;border-radius:4px;padding:0 4px;line-height:1.3}
+.ledger.com .pk{font-size:12px}
+.ledger.pan .pk{font-size:9px;padding:0 2px}
+
+td.tot{position:sticky;right:0;z-index:7;background:var(--surface-2);text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.ledger.com td.tot{min-width:64px;width:64px;padding:0 8px;font-size:13px}
+.ledger.pan td.tot{width:38px;padding:0 3px;font-size:8.5px}
+thead th.tot{position:sticky;right:0;background:var(--surface-2)}
+td.tot .z{color:var(--ink-faint);font-weight:400}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 14px 0;font-size:11px;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.caltools{display:flex;gap:8px;padding:10px 14px 2px}
+.ctool{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.ctool svg{width:16px;height:16px}
+.ctool.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ctool:active{transform:scale(.97)}
+.fabmenu{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.fbig{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;font-family:inherit;text-align:left;width:100%}
+.fbig:active{transform:scale(.99)}
+.fbig .fi{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fbig b{display:block;font-size:16px;color:var(--ink)}
+.fbig em{display:block;font-size:12.5px;color:var(--ink-soft);font-style:normal;margin-top:2px}
+.explist{padding:2px 14px 16px}
+.exprow{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.exprow:active{background:var(--surface-2)}
+.exprow .ei{width:40px;height:40px;border-radius:10px;background:var(--surface-3);color:var(--warn);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.exprow .ex{flex:1;min-width:0}
+.exprow .exn{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exprow .exn span{color:var(--ink-soft);font-weight:400;font-size:13px}
+.exprow .exd{font-size:12px;color:var(--ink-faint)}
+.exprow .exa{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+
+/* Summary */
+.summary{padding:14px}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:11px 13px}
+.scard .lab{font-size:11px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:5px}
+.scard .val{font-size:22px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.scard .sub{font-size:11px;color:var(--ink-faint);margin-top:1px}
+.dotc{width:8px;height:8px;border-radius:50%;display:inline-block}
+.scard.big{grid-column:span 2;background:var(--accent);border-color:var(--accent)}
+.scard.big .lab,.scard.big .val,.scard.big .sub{color:#fff}
+.scard.big .lab{opacity:.85}
+.speserow{grid-column:span 2;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px;font-family:inherit;cursor:pointer;width:100%}
+.speserow:active{background:var(--surface-2)}
+.speserow label{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+.speseval{font-size:15px;font-weight:700;color:var(--warn);font-variant-numeric:tabular-nums}
+
+/* Bottom nav */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);display:flex;max-width:760px;margin:0 auto;padding:6px 8px 8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.tabbar button{flex:1;background:none;border:none;color:var(--ink-faint);display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;cursor:pointer;font-family:inherit}
+.tabbar button .ic{font-size:21px;line-height:1}
+.tabbar button .tl{font-size:10.5px;font-weight:600}
+.tabbar button.on{color:var(--accent)}
+
+/* FAB */
+.fab{position:fixed;right:16px;bottom:84px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:41;width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;border:none;font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.fab:active{transform:scale(.93)}
+
+/* Sheet / modal */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(20,15,8,.45);display:none;align-items:flex-end;justify-content:center}
+.scrim.open{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:760px;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;padding:8px 16px 24px;animation:up .22s ease}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media(prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:38px;height:4px;border-radius:3px;background:var(--line);margin:6px auto 10px}
+.sheet h2{font-size:18px;font-weight:600;margin:0 0 2px;letter-spacing:-.2px}
+.sheet .sh-sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 16px}
+.field{margin-bottom:14px}
+.field>label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.field input[type=text],.field input[type=tel],.field input[type=email],.field input[type=number],.field input[type=date],.field textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:52px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chbtn{border:1.5px solid var(--line);background:var(--paper);border-radius:11px;padding:10px 4px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink-soft);font-weight:600;font-size:12.5px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chbtn .sw{width:22px;height:22px;border-radius:7px}
+.chbtn.sel[data-c=cont]{border-color:var(--dir);background:var(--dir-bg);color:var(--dir-ink)}
+.chbtn.sel[data-c=booking]{border-color:var(--bk);background:var(--bk-bg);color:var(--bk-ink)}
+.chbtn.sel[data-c=airbnb]{border-color:var(--air);background:var(--air-bg);color:var(--air-ink)}
+.chbtn[data-c=cont] .sw{background:var(--dir)} .chbtn[data-c=booking] .sw{background:var(--bk)} .chbtn[data-c=airbnb] .sw{background:var(--air)}
+.pkbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pkbtn{border:1.5px solid var(--line);background:var(--paper);border-radius:11px;padding:11px 4px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink-soft);font-weight:600;font-size:13px}
+.pkbtn.sel{border-color:var(--accent);background:var(--surface-3);color:var(--ink)}
+.ct .who .d2{font-size:12px;color:var(--accent);font-weight:700;margin-top:1px}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:fit-content}
+.stepper button{width:44px;height:44px;border:none;background:var(--paper);color:var(--ink);font-size:20px;cursor:pointer}
+.stepper button:active{background:var(--surface-3)}
+.stepper .v{min-width:52px;text-align:center;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.hint{font-size:11.5px;color:var(--ink-faint);margin-top:5px}
+.sheet-actions{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:active{transform:scale(.98)}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.btn.danger{background:none;color:var(--air);flex:0 0 auto;padding:14px 16px;border:1px solid var(--line)}
+.nightspill{font-size:12px;color:var(--ink-soft);background:var(--surface-2);border-radius:8px;padding:8px 11px;margin-top:4px}
+.nightspill b{color:var(--ink)}
+
+/* Contatti */
+.page{padding:14px}
+.hidden{display:none}
+.searchbar{position:relative;margin-bottom:14px}
+.searchbar input{width:100%;font-size:15px;font-family:inherit;padding:12px 14px 12px 40px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.searchbar input:focus{outline:none;border-color:var(--accent)}
+.searchbar .si{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint);font-size:16px}
+.tools{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap}
+.tool{flex:1;min-width:130px;border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:11px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px}
+.tool:active{background:var(--surface-2)}
+.tool .ti2{color:var(--accent);font-size:16px}
+.ct{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line-soft)}
+.ct .av{width:42px;height:42px;border-radius:50%;background:var(--surface-3);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0}
+.ct .who{flex:1;min-width:0}
+.ct .who .n{font-size:15px;font-weight:600}
+.ct .who .d{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct .acts{display:flex;gap:7px}
+.ct .acts a{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:17px;border:1px solid var(--line)}
+.ct .acts a.wa{color:var(--dir)} .ct .acts a.tel{color:var(--bk)} .ct .acts a.mail{color:var(--air)}
+.empty{text-align:center;padding:44px 20px;color:var(--ink-soft)}
+.empty .bigic{font-size:40px;color:var(--line);margin-bottom:10px}
+.empty h3{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 5px}
+.empty p{font-size:13px;margin:0}
+
+/* Riepilogo */
+.bars{margin-top:6px}
+.bar{margin-bottom:14px}
+.bar .bl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.bar .bl .bn{font-weight:600;display:flex;align-items:center;gap:6px}
+.bar .bl .bv{font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.bar .track{height:9px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;border-radius:6px}
+.sectlabel{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 12px}
+.note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:13px;color:var(--ink-soft);margin-top:18px;line-height:1.5}
+.note b{color:var(--ink)}
+.miniyear{display:flex;gap:10px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;margin-top:4px}
+.toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:30px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.themebtn{margin-left:auto;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:15px;cursor:pointer}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="dot">B</div>
+      <div>
+        <h1>Registro B&amp;B</h1>
+        <p>9 camere · prenotazioni e contatti</p>
+      </div>
+    </div>
+    <div class="monthbar" id="monthbar" style="display:flex">
+      <div class="mtitle" id="mtitle">—</div>
+      <div class="mnav">
+        <button class="navbtn" id="prevM" aria-label="Mese precedente">‹</button>
+        <button class="navbtn" id="nextM" aria-label="Mese successivo">›</button>
+      </div>
+    </div>
+    <div class="caltools" id="caltools">
+      <button class="ctool" id="modeBtn"></button>
+    </div>
+  </header>
+
+  <!-- CALENDARIO -->
+  <section id="pgCal">
+    <div class="gridwrap" id="gridwrap"><div id="ledger"></div></div>
+    <div class="legend" id="legend"></div>
+    <div class="summary" id="summary"></div>
+  </section>
+
+  <!-- CONTATTI -->
+  <section id="pgCon" class="page hidden">
+    <div class="searchbar"><span class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><input id="cSearch" type="text" placeholder="Cerca un ospite"></div>
+    <div class="tools">
+      <button class="tool" id="copyNums"><svg class="ti2" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copia numeri</button>
+      <button class="tool" id="expCsv"><svg class="ti2" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Esporta CSV</button>
+    </div>
+    <div id="contactList"></div>
+  </section>
+
+  <!-- SPESE -->
+  <section id="pgSpese" class="page hidden" style="padding:0">
+    <div id="speseBody"></div>
+  </section>
+
+  <!-- RIEPILOGO -->
+  <section id="pgRep" class="page hidden">
+    <div id="repBody"></div>
+  </section>
+</div>
+
+<button class="fab" id="fab" aria-label="Nuova prenotazione">+</button>
+
+<nav class="tabbar">
+  <button class="on" data-tab="cal"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span><span class="tl">Calendario</span></button>
+  <button data-tab="con"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 5H8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12M6 5v14M6 5H4m2 14H4"/><circle cx="13" cy="10" r="2.2"/><path d="M9.8 16c0-1.6 1.4-2.6 3.2-2.6s3.2 1 3.2 2.6"/></svg></span><span class="tl">Contatti</span></button>
+  <button data-tab="spese"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.3"/></svg></span><span class="tl">Spese</span></button>
+  <button data-tab="rep"><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/></svg></span><span class="tl">Riepilogo</span></button>
+</nav>
+
+<div class="scrim" id="scrim">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var ROOMS=[1,2,3,4,5,6,7,8,9];
+var MESI=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+var WD=["D","L","M","M","G","V","S"];
+var CH={cont:{label:"Diretto",cvar:"--dir"},booking:{label:"Booking",cvar:"--bk"},airbnb:{label:"Airbnb",cvar:"--air"}};
+var CATS=[["pulizie","Ragazza pulizie"],["cibo","Cibo"],["prodotti","Prodotti pulizia"],["altro","Altro"]];
+function catLabel(k){for(var i=0;i<CATS.length;i++)if(CATS[i][0]===k)return CATS[i][1];return "Altro";}
+var KEY="bnb_registro_v1";
+var IC={
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  book:'<path d="M20 5H8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12M6 5v14M6 5H4m2 14H4"/><circle cx="13" cy="10" r="2.2"/><path d="M9.8 16c0-1.6 1.4-2.6 3.2-2.6s3.2 1 3.2 2.6"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  wa:'<path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3.5 20.5l1.7-4.8A8.4 8.4 0 1 1 21 11.5Z"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.5 19.5 0 0 1-8.5-3 19.3 19.3 0 0 1-6-6 19.5 19.5 0 0 1-3-8.6A2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9Z"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/>',
+  trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>',
+  euro:'<path d="M17 7a6 6 0 1 0 0 10M4 11h9M4 14h8"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14" r="1.3"/>'
+};
+function ic(n,size){var s=size||18;return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(IC[n]||"")+'</svg>';}
+
+function todayISO(){var d=new Date();return iso(d.getFullYear(),d.getMonth(),d.getDate());}
+function iso(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");}
+function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2],12,0,0);}
+function addDays(s,n){var d=parse(s);d.setDate(d.getDate()+n);return iso(d.getFullYear(),d.getMonth(),d.getDate());}
+function nights(a,b){return Math.max(1,Math.round((parse(b)-parse(a))/86400000));}
+function euro(n){return "€"+Math.round(n).toLocaleString("it-IT");}
+function surname(name){var t=(name||"").trim().split(/\s+/);return t[t.length-1]||name;}
+
+var seedMonth=(function(){var d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})();
+function seed(){
+  var y=seedMonth.y,m=seedMonth.m;
+  function D(day){return iso(y,m,day);}
+  return [
+    {id:1,room:1,guest:"Bianchi",people:2,price:170,channel:"cont",phone:"+39 333 1234567",email:"",notes:"",parking:"sopra",checkIn:D(3),checkOut:D(6)},
+    {id:2,room:2,guest:"De Luca",people:3,price:240,channel:"booking",phone:"",email:"",notes:"colazione 8:30",checkIn:D(3),checkOut:D(5)},
+    {id:3,room:4,guest:"Ferrari",people:2,price:95,channel:"airbnb",phone:"",email:"",notes:"",checkIn:D(4),checkOut:D(5)},
+    {id:4,room:5,guest:"Greco",people:2,price:150,channel:"cont",phone:"+39 340 9988776",email:"greco.f@email.it",notes:"cliente abituale",checkIn:D(6),checkOut:D(8)},
+    {id:5,room:7,guest:"Marino",people:4,price:320,channel:"booking",phone:"",email:"",notes:"",parking:"sotto",checkIn:D(10),checkOut:D(13)},
+    {id:6,room:3,guest:"Conti",people:1,price:65,channel:"cont",phone:"+39 347 2020202",email:"",notes:"",checkIn:D(12),checkOut:D(13)},
+    {id:7,room:9,guest:"Rizzo",people:2,price:110,channel:"airbnb",phone:"",email:"",notes:"",checkIn:D(15),checkOut:D(17)},
+    {id:8,room:6,guest:"Villa (famiglia)",people:5,price:450,channel:"cont",phone:"+39 366 5551212",email:"villa@email.it",notes:"3 notti, culla",parking:"sopra",checkIn:D(18),checkOut:D(21)},
+    {id:9,room:8,guest:"Bianchi",people:2,price:160,channel:"cont",phone:"+39 333 1234567",email:"",notes:"cliente di ritorno",parking:"sopra",checkIn:D(24),checkOut:D(26)}
+  ];
+}
+function seedExpenses(){
+  var y=seedMonth.y,m=seedMonth.m;function D(day){return iso(y,m,day);}
+  return [
+    {id:1,date:D(5),category:"pulizie",amount:120,note:"1ª quindicina"},
+    {id:2,date:D(8),category:"cibo",amount:85,note:"colazioni"},
+    {id:3,date:D(12),category:"prodotti",amount:40,note:"detersivi"}
+  ];
+}
+
+var API_URL=""; /* --- INDIRIZZO FOGLIO GOOGLE (compilato in fase di collegamento) --- */
+var state=load();
+function load(){
+  var s=null;
+  try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  if(!s||!s.bookings)s={bookings:[],expenses:[],nextId:1,nextExpId:1};
+  if(!s.expenses)s.expenses=[];
+  if(!s.nextId)s.nextId=1;
+  if(!s.nextExpId)s.nextExpId=1;
+  if(!s.mode)s.mode="pan";
+  return s;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} pushServer();}
+var _pushT=null;
+function pushServer(){
+  if(!API_URL)return;
+  clearTimeout(_pushT);
+  _pushT=setTimeout(function(){
+    try{fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({bookings:state.bookings,expenses:state.expenses})});}catch(e){}
+  },700);
+}
+function recalcIds(){var mi=0;state.bookings.forEach(function(b){if(+b.id>mi)mi=+b.id;});state.nextId=mi+1;var me=0;state.expenses.forEach(function(x){if(+x.id>me)me=+x.id;});state.nextExpId=me+1;}
+function pullServer(){
+  if(!API_URL)return;
+  var cb="__cb"+(new Date().getTime());
+  var sc=document.createElement("script");
+  window[cb]=function(d){
+    try{
+      if(d&&d.bookings){
+        if(d.bookings.length||(d.expenses&&d.expenses.length)){
+          state.bookings=d.bookings;state.expenses=d.expenses||[];recalcIds();
+          try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+          refresh();
+        }else if(state.bookings.length||state.expenses.length){pushServer();}
+      }
+    }catch(e){}
+    delete window[cb];if(sc&&sc.parentNode)sc.parentNode.removeChild(sc);
+  };
+  sc.src=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"action=all&callback="+cb;
+  document.body.appendChild(sc);
+}
+
+var view={y:seedMonth.y,m:seedMonth.m};
+var tab="cal";
+
+function monthKey(y,m){return y+"-"+String(m+1).padStart(2,"0");}
+function inView(b){var ci=parse(b.checkIn);return ci.getFullYear()===view.y&&ci.getMonth()===view.m;}
+function occupies(b,y,m,day){var d=iso(y,m,day);return d>=b.checkIn&&d<b.checkOut;}
+
+/* ---------- CALENDAR ---------- */
+var CENTER_ROOM=6;
+function wkClass(dow){return dow===5?"wk-ven":dow===6?"wk-sab":dow===0?"wk-dom":"";}
+function renderCal(){
+  var y=view.y,m=view.m,dim=new Date(y,m+1,0).getDate();
+  document.getElementById("mtitle").innerHTML=MESI[m].charAt(0).toUpperCase()+MESI[m].slice(1)+" <span>"+y+"</span>";
+  var pan=state.mode==="pan";
+  document.getElementById("gridwrap").className="gridwrap"+(pan?" pan":"");
+  var h='<table class="ledger '+(pan?"pan":"com")+'"><thead><tr><th class="col-day">G</th>';
+  for(var r=0;r<9;r++){var rm=ROOMS[r];h+='<th class="rh rh'+rm+(rm===CENTER_ROOM?" center-room":"")+'">'+(pan?rm:"Cam "+rm)+'</th>';}
+  h+='<th class="tot">€</th></tr></thead><tbody>';
+  var tISO=todayISO();
+  for(var day=1;day<=dim;day++){
+    var dow=new Date(y,m,day).getDay();
+    var dISO=iso(y,m,day);
+    var cls=wkClass(dow)+(dISO===tISO?" today":"");
+    h+='<tr class="'+cls+'"><td class="col-day"><div class="daycell"><span class="dn">'+day+'</span><span class="dw">'+WD[dow]+'</span></div></td>';
+    var dayTot=0;
+    for(var r2=0;r2<9;r2++){
+      var room=ROOMS[r2], b=null;
+      for(var i=0;i<state.bookings.length;i++){if(state.bookings[i].room===room&&occupies(state.bookings[i],y,m,day)){b=state.bookings[i];break;}}
+      var rcls="r"+room+(room===CENTER_ROOM?" center-room":"");
+      if(b){
+        var first=b.checkIn===dISO;
+        if(first)dayTot+=(+b.price||0);
+        h+='<td class="cell '+rcls+'" data-book="'+b.id+'" data-room="'+room+'" data-day="'+day+'">'+cellHTML(b,first,pan)+'</td>';
+      }else{
+        h+='<td class="cell empty '+rcls+'" data-room="'+room+'" data-day="'+day+'"></td>';
+      }
+    }
+    h+='<td class="tot">'+(dayTot>0?euro(dayTot):'<span class="z">·</span>')+'</td></tr>';
+  }
+  h+='</tbody></table>';
+  document.getElementById("ledger").innerHTML=h;
+  renderLegend();
+  renderSummary();
+}
+function cellHTML(b,first,pan){
+  var c=b.channel;
+  if(!first){return '<div class="book mid"><span class="cont-mark">‖</span></div>';}
+  var chipLabel=c==="cont"?"DIR":c==="booking"?"BK":"AIR";
+  var eur=(+b.price>0)?'<span class="eur">'+(pan?Math.round(b.price):euro(b.price))+'</span>':'';
+  var pk=b.parking?'<span class="pk">'+(b.parking==="sopra"?"↑":"↓")+'</span>':'';
+  return '<div class="book"><span class="nm">'+esc(surname(b.guest))+' <span class="ppl">'+b.people+'</span></span>'+
+    '<span class="meta"><span class="chip '+c+'">'+chipLabel+'</span>'+eur+pk+'</span></div>';
+}
+function renderLegend(){
+  document.getElementById("legend").innerHTML=
+    '<span><i style="background:var(--wk-ven)"></i>Ven</span>'+
+    '<span><i style="background:var(--wk-sab)"></i>Sab</span>'+
+    '<span><i style="background:var(--wk-dom)"></i>Dom</span>'+
+    '<span><i style="background:var(--dir)"></i>Diretto</span>'+
+    '<span><i style="background:var(--bk)"></i>Booking</span>'+
+    '<span><i style="background:var(--air)"></i>Airbnb</span>';
+}
+function renderSummary(){
+  var y=view.y,m=view.m,dim=new Date(y,m+1,0).getDate();
+  var tot={cont:0,booking:0,airbnb:0},nightsSold=0;
+  state.bookings.forEach(function(b){
+    if(inView(b))tot[b.channel]+=(+b.price||0);
+    for(var day=1;day<=dim;day++)if(occupies(b,y,m,day))nightsSold++;
+  });
+  var spese=monthExpenses(y,m);
+  var incasso=tot.cont+tot.booking+tot.airbnb, utile=incasso-spese;
+  var occ=Math.round(nightsSold/(9*dim)*100);
+  var s='<div class="sgrid">';
+  s+=card("Diretto",euro(tot.cont),"--dir");
+  s+=card("Booking",euro(tot.booking),"--bk");
+  s+=card("Airbnb",euro(tot.airbnb),"--air");
+  s+=card("Occupazione",occ+"%","--accent",nightsSold+" notti su "+(9*dim));
+  s+='<button class="speserow" id="speseGo"><label><span class="dotc" style="background:var(--warn)"></span>Spese del mese</label>'+
+     '<span class="speseval">'+euro(spese)+' ›</span></button>';
+  s+='<div class="scard big"><div class="lab">Incasso '+MESI[m]+' — utile</div>'+
+     '<div class="val">'+euro(utile)+'</div><div class="sub">Incassato '+euro(incasso)+' · spese '+euro(spese)+'</div></div>';
+  s+='</div>';
+  document.getElementById("summary").innerHTML=s;
+  document.getElementById("speseGo").onclick=function(){setTab("spese");};
+}
+function card(lab,val,cvar,sub){
+  return '<div class="scard"><div class="lab"><span class="dotc" style="background:var('+cvar+')"></span>'+lab+'</div><div class="val">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
+}
+
+/* ---------- SHEET (add/edit) ---------- */
+var editingId=null;
+function openSheet(preset){
+  editingId=preset&&preset.id||null;
+  var b=preset||{};
+  var ci=b.checkIn||iso(view.y,view.m,(preset&&preset.day)||1);
+  var co=b.checkOut||addDays(ci,1);
+  var ch=b.channel||"cont";
+  var html='<div class="grab"></div>';
+  html+='<h2>'+(editingId?"Modifica prenotazione":"Nuova prenotazione")+'</h2>';
+  html+='<p class="sh-sub">Camera <b id="shRoom">'+(b.room||ROOMS[0])+'</b> · compila e salva</p>';
+  html+='<div class="field"><label>Nome ospite</label><input type="text" id="fName" value="'+esc(b.guest||"")+'" placeholder="Es. Rossi" autocomplete="off"><div class="hint" id="spendHint" style="display:none;margin-top:7px"></div></div>';
+  html+='<div class="row2"><div class="field"><label>Camera</label>'+roomSelect(b.room||ROOMS[0])+'</div>'+
+        '<div class="field"><label>Persone</label><div class="stepper"><button type="button" id="pMinus">–</button><span class="v" id="pVal">'+(b.people||2)+'</span><button type="button" id="pPlus">+</button></div></div></div>';
+  html+='<div class="row2"><div class="field"><label>Check-in</label><input type="date" id="fIn" value="'+ci+'"></div>'+
+        '<div class="field"><label>Check-out</label><input type="date" id="fOut" value="'+co+'"></div></div>';
+  html+='<div class="nightspill" id="nspill"></div>';
+  html+='<div class="field" style="margin-top:14px"><label>Canale</label><div class="chbtns" id="chBtns">';
+  ["cont","booking","airbnb"].forEach(function(k){
+    html+='<button type="button" class="chbtn'+(k===ch?" sel":"")+'" data-c="'+k+'"><span class="sw"></span>'+CH[k].label+'</button>';
+  });
+  html+='</div></div>';
+  html+='<div class="field"><label>Parcheggio</label><div class="pkbtns" id="pkBtns">';
+  [["","Nessuno"],["sopra","Sopra ↑"],["sotto","Sotto ↓"]].forEach(function(p){
+    html+='<button type="button" class="pkbtn'+((b.parking||"")===p[0]?" sel":"")+'" data-p="'+p[0]+'">'+p[1]+'</button>';
+  });
+  html+='</div></div>';
+  html+='<div class="field"><label>Prezzo totale (€)</label><input type="number" inputmode="decimal" id="fPrice" value="'+(b.price!=null?b.price:"")+'" placeholder="0"></div>';
+  html+='<div class="row2"><div class="field"><label>Telefono</label><input type="tel" id="fPhone" value="'+esc(b.phone||"")+'" placeholder="+39 …"></div>'+
+        '<div class="field"><label>Email</label><input type="email" id="fEmail" value="'+esc(b.email||"")+'" placeholder="facoltativa"></div></div>';
+  html+='<div class="field"><label>Note</label><textarea id="fNotes" placeholder="Facoltative">'+esc(b.notes||"")+'</textarea></div>';
+  html+='<div class="sheet-actions">';
+  if(editingId)html+='<button class="btn danger" id="delBtn" aria-label="Elimina">'+ic("trash",18)+'</button>';
+  html+='<button class="btn ghost" id="cancelBtn">Annulla</button><button class="btn primary" id="saveBtn">Salva</button></div>';
+  document.getElementById("sheet").innerHTML=html;
+  document.getElementById("scrim").classList.add("open");
+  wireSheet();
+}
+function roomSelect(sel){
+  var s='<select id="fRoom" style="width:100%;font-size:16px;font-family:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)">';
+  ROOMS.forEach(function(r){s+='<option value="'+r+'"'+(r===sel?" selected":"")+'>Camera '+r+'</option>';});
+  return s+'</select>';
+}
+function wireSheet(){
+  var people=+document.getElementById("pVal").textContent;
+  function upSpill(){
+    var n=nights(document.getElementById("fIn").value,document.getElementById("fOut").value);
+    document.getElementById("nspill").innerHTML='<b>'+n+'</b> '+(n===1?"notte":"notti")+' · il prezzo è il <b>totale</b> del soggiorno';
+  }
+  upSpill();
+  document.getElementById("fIn").addEventListener("change",function(){
+    var o=document.getElementById("fOut");if(o.value<=this.value)o.value=addDays(this.value,1);upSpill();});
+  document.getElementById("fOut").addEventListener("change",upSpill);
+  document.getElementById("pMinus").onclick=function(){people=Math.max(1,people-1);document.getElementById("pVal").textContent=people;};
+  document.getElementById("pPlus").onclick=function(){people=Math.min(9,people+1);document.getElementById("pVal").textContent=people;};
+  document.getElementById("fRoom").addEventListener("change",function(){document.getElementById("shRoom").textContent=this.value;});
+  Array.prototype.forEach.call(document.querySelectorAll("#chBtns .chbtn"),function(btn){
+    btn.onclick=function(){document.querySelectorAll("#chBtns .chbtn").forEach(function(x){x.classList.remove("sel");});btn.classList.add("sel");};
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#pkBtns .pkbtn"),function(btn){
+    btn.onclick=function(){document.querySelectorAll("#pkBtns .pkbtn").forEach(function(x){x.classList.remove("sel");});btn.classList.add("sel");};
+  });
+  function showSpend(){
+    var nm=document.getElementById("fName").value.trim(), el=document.getElementById("spendHint");
+    var s=guestSpendByName(nm);
+    if(nm&&s.count>=1&&s.total>0){el.style.display="block";el.innerHTML='Questo ospite finora: <b style="color:var(--accent)">'+euro(s.total)+'</b> in '+soggiorni(s.count)+' · <b style="color:var(--air-ink)">'+euro(s.perNight)+'/notte</b>';}
+    else{el.style.display="none";}
+  }
+  showSpend();
+  document.getElementById("fName").addEventListener("blur",showSpend);
+  document.getElementById("cancelBtn").onclick=closeSheet;
+  document.getElementById("saveBtn").onclick=function(){
+    var name=document.getElementById("fName").value.trim();
+    if(!name){document.getElementById("fName").focus();toast("Scrivi il nome dell'ospite");return;}
+    var sel=document.querySelector("#chBtns .chbtn.sel");
+    var pkSel=document.querySelector("#pkBtns .pkbtn.sel");
+    var rec={
+      room:+document.getElementById("fRoom").value,
+      guest:name,people:people,
+      channel:sel?sel.getAttribute("data-c"):"cont",
+      parking:pkSel?pkSel.getAttribute("data-p"):"",
+      price:+document.getElementById("fPrice").value||0,
+      checkIn:document.getElementById("fIn").value,
+      checkOut:document.getElementById("fOut").value,
+      phone:document.getElementById("fPhone").value.trim(),
+      email:document.getElementById("fEmail").value.trim(),
+      notes:document.getElementById("fNotes").value.trim()
+    };
+    if(editingId){for(var i=0;i<state.bookings.length;i++)if(state.bookings[i].id===editingId){Object.assign(state.bookings[i],rec);break;}}
+    else{rec.id=state.nextId++;state.bookings.push(rec);}
+    save();closeSheet();refresh();toast(editingId?"Modifiche salvate":"Prenotazione aggiunta");
+  };
+  if(editingId)document.getElementById("delBtn").onclick=function(){
+    if(confirm("Eliminare questa prenotazione?")){state.bookings=state.bookings.filter(function(b){return b.id!==editingId;});save();closeSheet();refresh();toast("Prenotazione eliminata");}
+  };
+}
+function closeSheet(){document.getElementById("scrim").classList.remove("open");}
+
+/* ---------- CONTATTI ---------- */
+function renderContacts(){
+  var q=(document.getElementById("cSearch").value||"").toLowerCase();
+  var seen={},list=[];
+  state.bookings.slice().sort(function(a,b){return b.checkIn<a.checkIn?-1:1;}).forEach(function(b){
+    if(!b.phone&&!b.email)return;
+    var k=(b.phone||b.email||b.guest).toLowerCase();
+    if(seen[k])return;seen[k]=1;
+    list.push(b);
+  });
+  var filtered=list.filter(function(b){return b.guest.toLowerCase().indexOf(q)>-1||(b.phone||"").indexOf(q)>-1;});
+  var el=document.getElementById("contactList");
+  if(!list.length){el.innerHTML=emptyState("book","Nessun contatto ancora","I recapiti che aggiungi alle prenotazioni finiscono qui, pronti per i messaggi.");return;}
+  if(!filtered.length){el.innerHTML=emptyState("search","Nessun risultato","Prova con un altro nome.");return;}
+  var h="";
+  filtered.forEach(function(b){
+    var ini=surname(b.guest).slice(0,2).toUpperCase();
+    var det=[b.phone,b.email].filter(Boolean).join(" · ");
+    var waNum=(b.phone||"").replace(/[^0-9]/g,"");
+    var st=guestSpendByName(b.guest);
+    h+='<div class="ct"><div class="av">'+esc(ini)+'</div>'+
+       '<div class="who"><div class="n">'+esc(b.guest)+'</div>'+
+       '<div class="d2"><b style="color:var(--air-ink)">'+euro(st.perNight)+'/notte</b> · '+euro(st.total)+' · '+soggiorni(st.count)+'</div>'+
+       '<div class="d">'+esc(det)+'</div></div><div class="acts">';
+    if(b.phone)h+='<a class="wa" href="https://wa.me/'+waNum+'" aria-label="WhatsApp">'+ic("wa",18)+'</a><a class="tel" href="tel:'+esc(b.phone)+'" aria-label="Chiama">'+ic("phone",17)+'</a>';
+    if(b.email)h+='<a class="mail" href="mailto:'+esc(b.email)+'" aria-label="Email">'+ic("mail",17)+'</a>';
+    h+='</div></div>';
+  });
+  el.innerHTML=h;
+  window.__contacts=list;
+}
+function emptyState(icon,h,p){return '<div class="empty"><div class="bigic">'+ic(icon,40)+'</div><h3>'+h+'</h3><p>'+p+'</p></div>';}
+
+/* ---------- RIEPILOGO ---------- */
+function renderReport(){
+  var y=view.y,m=view.m,dim=new Date(y,m+1,0).getDate();
+  var tot={cont:0,booking:0,airbnb:0},nightsSold=0,nBook=0;
+  state.bookings.forEach(function(b){
+    if(inView(b)){tot[b.channel]+=(+b.price||0);nBook++;}
+    for(var day=1;day<=dim;day++)if(occupies(b,y,m,day))nightsSold++;
+  });
+  var incasso=tot.cont+tot.booking+tot.airbnb;
+  var spese=monthExpenses(y,m), utile=incasso-spese;
+  var occ=Math.round(nightsSold/(9*dim)*100);
+  var mx=Math.max(tot.cont,tot.booking,tot.airbnb,1);
+  var withContact=0,total=state.bookings.length;
+  state.bookings.forEach(function(b){if(b.phone||b.email)withContact++;});
+  var h='<div class="sgrid">';
+  h+='<div class="scard big"><div class="lab">Utile di '+MESI[m]+' '+y+'</div><div class="val">'+euro(utile)+'</div><div class="sub">Incasso '+euro(incasso)+' − spese '+euro(spese)+'</div></div>';
+  h+=card("Incasso",euro(incasso),"--dir",nBook+" prenotazioni");
+  h+=card("Spese",euro(spese),"--warn","del mese");
+  h+=card("Occupazione",occ+"%","--accent",nightsSold+"/"+(9*dim)+" notti");
+  h+=card("Prezzo medio",euro(nightsSold?incasso/nightsSold:0),"--ink-soft","a notte");
+  h+='</div>';
+  h+='<div class="sectlabel">Incasso per canale</div><div class="bars">';
+  h+=barRow("Diretto (contanti)","--dir",tot.cont,mx,incasso);
+  h+=barRow("Booking","--bk",tot.booking,mx,incasso);
+  h+=barRow("Airbnb","--air",tot.airbnb,mx,incasso);
+  h+='</div>';
+  h+='<div class="sectlabel">Rubrica contatti</div>';
+  h+='<div class="bar"><div class="bl"><span class="bn"><span class="dotc" style="background:var(--accent)"></span>Prenotazioni con recapito</span><span class="bv">'+withContact+' su '+total+'</span></div>'+
+     '<div class="track"><div class="fill" style="width:'+(total?Math.round(withContact/total*100):0)+'%;background:var(--accent)"></div></div></div>';
+  h+='<div class="note"><b>Suggerimento.</b> Chiedi sempre numero (e se possibile email) al momento della prenotazione: più recapiti raccogli, più la rubrica diventa utile per gli auguri, le offerte di bassa stagione o i messaggi ai clienti abituali. I recapiti si aggiungono direttamente dalla prenotazione.</div>';
+  document.getElementById("repBody").innerHTML=h;
+}
+function barRow(name,cvar,val,mx,tot){
+  var pct=tot?Math.round(val/tot*100):0;
+  return '<div class="bar"><div class="bl"><span class="bn"><span class="dotc" style="background:var('+cvar+')"></span>'+name+'</span><span class="bv">'+euro(val)+(tot?' · '+pct+'%':'')+'</span></div>'+
+    '<div class="track"><div class="fill" style="width:'+Math.round(val/mx*100)+'%;background:var('+cvar+')"></div></div></div>';
+}
+
+/* ---------- SPESE ---------- */
+function fmtDate(s){var p=(s||"").split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):s;}
+function monthExpenses(y,m){var t=0,mk=monthKey(y,m);state.expenses.forEach(function(x){if(x.date&&x.date.slice(0,7)===mk)t+=(+x.amount||0);});return t;}
+function renderExpenses(){
+  var y=view.y,m=view.m,mk=monthKey(y,m);
+  var list=state.expenses.filter(function(x){return x.date&&x.date.slice(0,7)===mk;}).sort(function(a,b){return a.date<b.date?-1:1;});
+  var tot=0,byCat={};list.forEach(function(x){tot+=(+x.amount||0);byCat[x.category]=(byCat[x.category]||0)+(+x.amount||0);});
+  var h='<div class="summary"><div class="sgrid">';
+  h+='<div class="scard big" style="background:var(--warn);border-color:var(--warn)"><div class="lab">Spese di '+MESI[m]+' '+y+'</div><div class="val">'+euro(tot)+'</div><div class="sub">'+list.length+' voci</div></div>';
+  CATS.forEach(function(c){if(byCat[c[0]])h+=card(c[1],euro(byCat[c[0]]),"--warn");});
+  h+='</div></div>';
+  h+='<div class="explist">';
+  if(!list.length){h+=emptyState("euro","Nessuna spesa questo mese","Tocca il + in basso e scegli Spesa.");}
+  else list.forEach(function(x){
+    h+='<div class="exprow" data-exp="'+x.id+'"><div class="ei">'+esc(catLabel(x.category).charAt(0))+'</div>'+
+       '<div class="ex"><div class="exn">'+esc(catLabel(x.category))+(x.note?' <span>· '+esc(x.note)+'</span>':'')+'</div><div class="exd">'+fmtDate(x.date)+'</div></div>'+
+       '<div class="exa">'+euro(x.amount)+'</div></div>';
+  });
+  h+='</div>';
+  document.getElementById("speseBody").innerHTML=h;
+}
+var IC_CAL='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>';
+var IC_EUROW='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7a6 6 0 1 0 0 10M4 11h9M4 14h8"/></svg>';
+function openFabMenu(){
+  var html='<div class="grab"></div><h2>Cosa vuoi aggiungere?</h2><p class="sh-sub">Scegli il tipo</p><div class="fabmenu">';
+  html+='<button class="fbig" id="fabBook"><span class="fi" style="background:var(--accent)">'+IC_CAL+'</span><span><b>Prenotazione</b><em>Ospite, camera, date, prezzo</em></span></button>';
+  html+='<button class="fbig" id="fabExp"><span class="fi" style="background:var(--warn)">'+IC_EUROW+'</span><span><b>Spesa</b><em>Pulizie, cibo, prodotti…</em></span></button>';
+  html+='</div>';
+  document.getElementById("sheet").innerHTML=html;
+  document.getElementById("scrim").classList.add("open");
+  document.getElementById("fabBook").onclick=function(){openSheet({room:ROOMS[0],day:(view.y===seedMonth.y&&view.m===seedMonth.m)?new Date().getDate():1});};
+  document.getElementById("fabExp").onclick=function(){openExpenseSheet(null);};
+}
+var editingExpId=null;
+function openExpenseSheet(exp){
+  editingExpId=exp&&exp.id||null;
+  var e=exp||{};
+  var d=e.date||iso(view.y,view.m,(view.y===seedMonth.y&&view.m===seedMonth.m)?new Date().getDate():1);
+  var cat=e.category||"pulizie";
+  var html='<div class="grab"></div><h2>'+(editingExpId?"Modifica spesa":"Nuova spesa")+'</h2><p class="sh-sub">Registra una spesa del mese</p>';
+  html+='<div class="field"><label>Categoria</label><div class="pkbtns" id="catBtns" style="grid-template-columns:repeat(2,1fr)">';
+  CATS.forEach(function(c){html+='<button type="button" class="pkbtn'+(cat===c[0]?" sel":"")+'" data-c="'+c[0]+'">'+c[1]+'</button>';});
+  html+='</div></div>';
+  html+='<div class="row2"><div class="field"><label>Data</label><input type="date" id="eDate" value="'+d+'"></div><div class="field"><label>Importo (€)</label><input type="number" inputmode="decimal" id="eAmt" value="'+(e.amount!=null?e.amount:"")+'" placeholder="0"></div></div>';
+  html+='<div class="field"><label>Nota (facoltativa)</label><input type="text" id="eNote" value="'+esc(e.note||"")+'" placeholder="Es. 1ª quindicina"></div>';
+  html+='<div class="sheet-actions">';
+  if(editingExpId)html+='<button class="btn danger" id="eDel" aria-label="Elimina">'+ic("trash",18)+'</button>';
+  html+='<button class="btn ghost" id="eCancel">Annulla</button><button class="btn primary" id="eSave">Salva</button></div>';
+  document.getElementById("sheet").innerHTML=html;
+  document.getElementById("scrim").classList.add("open");
+  Array.prototype.forEach.call(document.querySelectorAll("#catBtns .pkbtn"),function(btn){btn.onclick=function(){document.querySelectorAll("#catBtns .pkbtn").forEach(function(x){x.classList.remove("sel");});btn.classList.add("sel");};});
+  document.getElementById("eCancel").onclick=closeSheet;
+  document.getElementById("eSave").onclick=function(){
+    var amt=+document.getElementById("eAmt").value||0;
+    if(!amt){document.getElementById("eAmt").focus();toast("Inserisci l'importo");return;}
+    var sel=document.querySelector("#catBtns .pkbtn.sel");
+    var rec={date:document.getElementById("eDate").value,category:sel?sel.getAttribute("data-c"):"altro",amount:amt,note:document.getElementById("eNote").value.trim()};
+    if(editingExpId){for(var i=0;i<state.expenses.length;i++)if(state.expenses[i].id===editingExpId){Object.assign(state.expenses[i],rec);break;}}
+    else{rec.id=state.nextExpId++;state.expenses.push(rec);}
+    save();closeSheet();
+    if(tab!=="spese")setTab("spese");else refresh();
+    toast(editingExpId?"Spesa salvata":"Spesa aggiunta");
+  };
+  if(editingExpId)document.getElementById("eDel").onclick=function(){if(confirm("Eliminare questa spesa?")){state.expenses=state.expenses.filter(function(x){return x.id!==editingExpId;});save();closeSheet();refresh();toast("Spesa eliminata");}};
+}
+
+/* ---------- helpers / wiring ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function normName(s){return (s||"").trim().toLowerCase();}
+function guestSpendByName(name){var k=normName(name);var t=0,c=0,n=0;if(!k)return {total:0,count:0,nights:0,perNight:0};state.bookings.forEach(function(x){if(normName(x.guest)===k){t+=(+x.price||0);c++;n+=nights(x.checkIn,x.checkOut);}});return {total:t,count:c,nights:n,perNight:n?t/n:0};}
+function soggiorni(n){return n+" "+(n===1?"soggiorno":"soggiorni");}
+function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},1900);}
+function refresh(){if(tab==="cal")renderCal();else if(tab==="con")renderContacts();else if(tab==="spese")renderExpenses();else renderReport();}
+
+function setTab(t){
+  tab=t;
+  document.getElementById("pgCal").classList.toggle("hidden",t!=="cal");
+  document.getElementById("pgCon").classList.toggle("hidden",t!=="con");
+  document.getElementById("pgSpese").classList.toggle("hidden",t!=="spese");
+  document.getElementById("pgRep").classList.toggle("hidden",t!=="rep");
+  document.getElementById("monthbar").style.display=(t==="con")?"none":"flex";
+  document.getElementById("caltools").style.display=(t==="cal")?"flex":"none";
+  Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});
+  document.getElementById("fab").style.display=(t==="con")?"none":"flex";
+  refresh();
+}
+
+document.getElementById("ledger").addEventListener("click",function(e){
+  var cell=e.target.closest(".cell");if(!cell)return;
+  var day=+cell.getAttribute("data-day"),room=+cell.getAttribute("data-room");
+  if(cell.getAttribute("data-book")){
+    var id=+cell.getAttribute("data-book"),b=null;
+    for(var i=0;i<state.bookings.length;i++)if(state.bookings[i].id===id)b=state.bookings[i];
+    if(b)openSheet(b);
+  }else{
+    openSheet({room:room,day:day});
+  }
+});
+document.getElementById("prevM").onclick=function(){view.m--;if(view.m<0){view.m=11;view.y--;}refresh();};
+document.getElementById("nextM").onclick=function(){view.m++;if(view.m>11){view.m=0;view.y++;}refresh();};
+var IC_EXPAND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/></svg>';
+var IC_ZOOM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>';
+function updateModeBtn(){var b=document.getElementById("modeBtn");b.innerHTML=(state.mode==="pan"?IC_ZOOM+"Ravvicina":IC_EXPAND+"Tutte le camere");}
+document.getElementById("modeBtn").onclick=function(){state.mode=state.mode==="pan"?"com":"pan";save();updateModeBtn();renderCal();};
+updateModeBtn();
+document.getElementById("fab").onclick=function(){openFabMenu();};
+document.getElementById("scrim").addEventListener("click",function(e){if(e.target===this)closeSheet();});
+document.getElementById("cSearch").addEventListener("input",renderContacts);
+document.getElementById("speseBody").addEventListener("click",function(e){var r=e.target.closest(".exprow");if(!r)return;var id=+r.getAttribute("data-exp"),x=null;for(var i=0;i<state.expenses.length;i++)if(state.expenses[i].id===id)x=state.expenses[i];if(x)openExpenseSheet(x);});
+Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"),function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"));};});
+
+document.getElementById("copyNums").onclick=function(){
+  var list=(window.__contacts||[]).filter(function(b){return b.phone;});
+  if(!list.length){toast("Nessun numero da copiare");return;}
+  var txt=list.map(function(b){return b.guest+": "+b.phone;}).join("\n");
+  navigator.clipboard&&navigator.clipboard.writeText(txt).then(function(){toast(list.length+" numeri copiati");},function(){toast("Copia non riuscita");});
+};
+document.getElementById("expCsv").onclick=function(){
+  var rows=[["Nome","Telefono","Email","Ultima camera","Ultimo check-in"]];
+  (window.__contacts||[]).forEach(function(b){rows.push([b.guest,b.phone||"",b.email||"","Camera "+b.room,b.checkIn]);});
+  if(rows.length<2){toast("Nessun contatto da esportare");return;}
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
+  var blob=new Blob(["﻿"+csv],{type:"text/csv"});var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="contatti-bnb.csv";a.click();URL.revokeObjectURL(url);toast("CSV esportato");
+};
+
+setTab("cal");
+pullServer();
+})();
+</script>
+
+</body>
+</html>
