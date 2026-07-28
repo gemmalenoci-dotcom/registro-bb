@@ -356,7 +356,12 @@ function seedExpenses(){
   ];
 }
 
-var API_URL=""; /* --- INDIRIZZO FOGLIO GOOGLE (compilato in fase di collegamento) --- */
+var API_URL=""; /* --- INDIRIZZO FOGLIO GOOGLE --- */
+try{
+  var _q=location.search.match(/[?&]api=([^&]+)/);
+  if(_q){API_URL=decodeURIComponent(_q[1]);localStorage.setItem("bnb_api",API_URL);}
+  else{var _st=localStorage.getItem("bnb_api");if(_st)API_URL=_st;}
+}catch(e){}
 var state=load();
 function load(){
   var s=null;
