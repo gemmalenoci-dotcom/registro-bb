@@ -391,14 +391,12 @@ function pullServer(){
   window[cb]=function(d){
     try{
       if(d&&d.bookings){
-        if(d.bookings.length||(d.expenses&&d.expenses.length)){
-          state.bookings=d.bookings;state.expenses=d.expenses||[];
-          state.bookings.forEach(function(b){b.checkIn=normDate(b.checkIn);b.checkOut=normDate(b.checkOut);});
-          state.expenses.forEach(function(x){x.date=normDate(x.date);});
-          recalcIds();
-          try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
-          refresh();
-        }else if(state.bookings.length||state.expenses.length){pushServer();}
+        state.bookings=d.bookings;state.expenses=d.expenses||[];
+        state.bookings.forEach(function(b){b.checkIn=normDate(b.checkIn);b.checkOut=normDate(b.checkOut);});
+        state.expenses.forEach(function(x){x.date=normDate(x.date);});
+        recalcIds();
+        try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+        refresh();
       }
     }catch(e){}
     delete window[cb];if(sc&&sc.parentNode)sc.parentNode.removeChild(sc);
