@@ -600,11 +600,11 @@ function renderContacts(){
   var seen={},list=[];
   state.bookings.slice().sort(function(a,b){return b.checkIn<a.checkIn?-1:1;}).forEach(function(b){
     if(!b.phone&&!b.email)return;
-    var k=(b.phone||b.email||b.guest).toLowerCase();
+    var k=String(b.phone||b.email||b.guest||"").toLowerCase();
     if(seen[k])return;seen[k]=1;
     list.push(b);
   });
-  var filtered=list.filter(function(b){return b.guest.toLowerCase().indexOf(q)>-1||(b.phone||"").indexOf(q)>-1;});
+  var filtered=list.filter(function(b){return String(b.guest||"").toLowerCase().indexOf(q)>-1||String(b.phone||"").indexOf(q)>-1;});
   var el=document.getElementById("contactList");
   if(!list.length){el.innerHTML=emptyState("book","Nessun contatto ancora","I recapiti che aggiungi alle prenotazioni finiscono qui, pronti per i messaggi.");return;}
   if(!filtered.length){el.innerHTML=emptyState("search","Nessun risultato","Prova con un altro nome.");return;}
@@ -612,7 +612,7 @@ function renderContacts(){
   filtered.forEach(function(b){
     var ini=surname(b.guest).slice(0,2).toUpperCase();
     var det=[b.phone,b.email].filter(Boolean).join(" · ");
-    var waNum=(b.phone||"").replace(/[^0-9]/g,"");
+    var waNum=String(b.phone||"").replace(/[^0-9]/g,"");
     var st=guestSpendByName(b.guest);
     h+='<div class="ct"><div class="av">'+esc(ini)+'</div>'+
        '<div class="who"><div class="n">'+esc(b.guest)+'</div>'+
