@@ -71,6 +71,7 @@ thead .col-day,thead .tot{z-index:12}
 tr.wk-ven .col-day{background:var(--wk-ven)} tr.wk-sab .col-day{background:var(--wk-sab)} tr.wk-dom .col-day{background:var(--wk-dom)}
 tr.wk-ven .col-day .dw,tr.wk-sab .col-day .dw,tr.wk-dom .col-day .dw{color:var(--ink-soft)}
 tbody tr.today .daycell .dn{background:var(--accent);color:#fff;border-radius:7px;padding:0 6px}
+tr.spill .daycell .dn{color:var(--ink-faint);font-weight:400}
 
 .cell{cursor:pointer;position:relative;vertical-align:middle}
 .cell.r1{background:var(--r1)}.cell.r2{background:var(--r2)}.cell.r3{background:var(--r3)}.cell.r4{background:var(--r4)}.cell.r5{background:var(--r5)}.cell.r6{background:var(--r6)}.cell.r7{background:var(--r7)}.cell.r8{background:var(--r8)}.cell.r9{background:var(--r9)}
@@ -413,6 +414,7 @@ var tab="cal";
 function monthKey(y,m){return y+"-"+String(m+1).padStart(2,"0");}
 function inView(b){var ci=parse(b.checkIn);return ci.getFullYear()===view.y&&ci.getMonth()===view.m;}
 function occupies(b,y,m,day){var d=iso(y,m,day);return d>=b.checkIn&&d<b.checkOut;}
+function occupiesISO(b,dISO){return dISO>=b.checkIn&&dISO<b.checkOut;}
 
 /* ---------- CALENDAR ---------- */
 var CENTER_ROOM=6;
@@ -426,23 +428,26 @@ function renderCal(){
   for(var r=0;r<9;r++){var rm=ROOMS[r];h+='<th class="rh rh'+rm+(rm===CENTER_ROOM?" center-room":"")+'">'+(pan?rm:"Cam "+rm)+'</th>';}
   h+='</tr></thead><tbody>';
   var tISO=todayISO();
-  for(var day=1;day<=dim;day++){
-    var dow=new Date(y,m,day).getDay();
-    var dISO=iso(y,m,day);
-    var cls=wkClass(dow)+(dISO===tISO?" today":"");
-    h+='<tr class="'+cls+'"><td class="col-day"><div class="daycell"><span class="dn">'+day+'</span><span class="dw">'+WD[dow]+'</span></div></td>';
+  var cur=new Date(y,m,1), endExt=new Date(y,m+1,0);
+  while(endExt.getDay()!==0){endExt.setDate(endExt.getDate()+1);}
+  while(cur<=endExt){
+    var dow=cur.getDay(), cd=cur.getDate(), spill=cur.getMonth()!==m;
+    var dISO=iso(cur.getFullYear(),cur.getMonth(),cd);
+    var cls=wkClass(dow)+(dISO===tISO?" today":"")+(spill?" spill":"");
+    h+='<tr class="'+cls+'"><td class="col-day"><div class="daycell"><span class="dn">'+cd+'</span><span class="dw">'+WD[dow]+'</span></div></td>';
     for(var r2=0;r2<9;r2++){
       var room=ROOMS[r2], b=null;
-      for(var i=0;i<state.bookings.length;i++){if(state.bookings[i].room===room&&occupies(state.bookings[i],y,m,day)){b=state.bookings[i];break;}}
+      for(var i=0;i<state.bookings.length;i++){if(state.bookings[i].room===room&&occupiesISO(state.bookings[i],dISO)){b=state.bookings[i];break;}}
       var rcls="r"+room+(room===CENTER_ROOM?" center-room":"");
       if(b){
         var first=b.checkIn===dISO;
-        h+='<td class="cell '+rcls+'" data-book="'+b.id+'" data-room="'+room+'" data-day="'+day+'">'+cellHTML(b,first,pan)+'</td>';
+        h+='<td class="cell '+rcls+'" data-book="'+b.id+'" data-room="'+room+'" data-iso="'+dISO+'">'+cellHTML(b,first,pan)+'</td>';
       }else{
-        h+='<td class="cell empty '+rcls+'" data-room="'+room+'" data-day="'+day+'"></td>';
+        h+='<td class="cell empty '+rcls+'" data-room="'+room+'" data-iso="'+dISO+'"></td>';
       }
     }
     h+='</tr>';
+    cur.setDate(cur.getDate()+1);
   }
   h+='</tbody></table>';
   document.getElementById("ledger").innerHTML=h;
@@ -501,7 +506,7 @@ var editingId=null;
 function openSheet(preset){
   editingId=preset&&preset.id||null;
   var b=preset||{};
-  var ci=b.checkIn||iso(view.y,view.m,(preset&&preset.day)||1);
+  var ci=b.checkIn||(preset&&preset.iso)||iso(view.y,view.m,(preset&&preset.day)||1);
   var co=b.checkOut||addDays(ci,1);
   var ch=b.channel||"cont";
   var html='<div class="grab"></div>';
@@ -754,13 +759,13 @@ function setTab(t){
 
 document.getElementById("ledger").addEventListener("click",function(e){
   var cell=e.target.closest(".cell");if(!cell)return;
-  var day=+cell.getAttribute("data-day"),room=+cell.getAttribute("data-room");
+  var isoD=cell.getAttribute("data-iso"),room=+cell.getAttribute("data-room");
   if(cell.getAttribute("data-book")){
     var id=+cell.getAttribute("data-book"),b=null;
     for(var i=0;i<state.bookings.length;i++)if(state.bookings[i].id===id)b=state.bookings[i];
     if(b)openSheet(b);
   }else{
-    openSheet({room:room,day:day});
+    openSheet({room:room,iso:isoD});
   }
 });
 document.getElementById("prevM").onclick=function(){view.m--;if(view.m<0){view.m=11;view.y--;}refresh();};
