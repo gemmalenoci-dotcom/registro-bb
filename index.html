@@ -796,6 +796,7 @@ document.getElementById("expCsv").onclick=function(){
   var a=document.createElement("a");a.href=url;a.download="contatti-bnb.csv";a.click();URL.revokeObjectURL(url);toast("CSV esportato");
 };
 
+window.addEventListener("resize",function(){var t=document.querySelector(".top");if(t)document.documentElement.style.setProperty("--htop",t.offsetHeight+"px");});
 setTab("cal");
 pullServer();
 })();
