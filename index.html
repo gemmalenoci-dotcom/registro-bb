@@ -94,8 +94,10 @@ tr.spill .daycell .dn{color:var(--ink-faint);font-weight:400}
 .ledger.com .chip{font-size:8.5px;padding:1px 5px;border-radius:20px}
 .ledger.pan .chip{font-size:6.5px;padding:0 2px;border-radius:3px}
 .chip.cont{background:var(--dir)} .chip.booking{background:var(--bk)} .chip.airbnb{background:var(--air)}
-.book.mid .nm,.book.mid .meta{opacity:.45}
-.book .cont-mark{color:var(--ink-faint);font-weight:700}
+.book.mid{align-items:center;justify-content:center}
+.book .cont-mark{color:var(--grid);font-weight:900;letter-spacing:1.5px}
+.ledger.com .cont-mark{font-size:20px}
+.ledger.pan .cont-mark{font-size:15px}
 .pkflag{position:absolute;top:1px;right:2px;font-weight:800;color:#d6342a;line-height:1;z-index:2}
 .ledger.com .pkflag{font-size:16px;top:3px;right:5px}
 .ledger.pan .pkflag{font-size:12px}
@@ -233,6 +235,13 @@ td.tot .z{color:var(--ink-faint);font-weight:400}
 .sectlabel{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 12px}
 .note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:13px;color:var(--ink-soft);margin-top:18px;line-height:1.5}
 .note b{color:var(--ink)}
+.trashrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line-soft)}
+.trashrow .tx{flex:1;min-width:0}
+.trashrow .txn{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trashrow .txn span{color:var(--ink-soft);font-weight:400;font-size:13px}
+.trashrow .txd{font-size:12px;color:var(--ink-faint)}
+.restorebtn{border:1px solid var(--accent);color:var(--accent);background:var(--surface);border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.restorebtn:active{transform:scale(.97)}
 .miniyear{display:flex;gap:10px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;margin-top:4px}
 .toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:30px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
@@ -254,9 +263,6 @@ td.tot .z{color:var(--ink-faint);font-weight:400}
         <button class="navbtn" id="prevM" aria-label="Mese precedente">‹</button>
         <button class="navbtn" id="nextM" aria-label="Mese successivo">›</button>
       </div>
-    </div>
-    <div class="caltools" id="caltools">
-      <button class="ctool" id="modeBtn"></button>
     </div>
   </header>
 
@@ -374,6 +380,7 @@ function load(){
   if(!s.expenses)s.expenses=[];
   if(!s.nextId)s.nextId=1;
   if(!s.nextExpId)s.nextExpId=1;
+  if(!s.deleted)s.deleted=[];
   if(!s.mode)s.mode="pan";
   return s;
 }
@@ -415,6 +422,9 @@ function monthKey(y,m){return y+"-"+String(m+1).padStart(2,"0");}
 function inView(b){var ci=parse(b.checkIn);return ci.getFullYear()===view.y&&ci.getMonth()===view.m;}
 function occupies(b,y,m,day){var d=iso(y,m,day);return d>=b.checkIn&&d<b.checkOut;}
 function occupiesISO(b,dISO){return dISO>=b.checkIn&&dISO<b.checkOut;}
+function daysInYear(yy){return ((yy%4===0&&yy%100!==0)||yy%400===0)?366:365;}
+function yearNightsSold(yy){var n=0;state.bookings.forEach(function(b){if(!b.checkIn||!b.checkOut)return;var co=parse(b.checkOut),d=parse(b.checkIn),g=0;while(d<co&&g<400){if(d.getFullYear()===yy)n++;d.setDate(d.getDate()+1);g++;}});return n;}
+function yearOcc(yy){return Math.round(yearNightsSold(yy)/(9*daysInYear(yy))*100);}
 
 /* ---------- CALENDAR ---------- */
 var CENTER_ROOM=6;
@@ -422,8 +432,8 @@ function wkClass(dow){return dow===5?"wk-ven":dow===6?"wk-sab":dow===0?"wk-dom":
 function renderCal(){
   var y=view.y,m=view.m,dim=new Date(y,m+1,0).getDate();
   document.getElementById("mtitle").innerHTML=MESI[m].charAt(0).toUpperCase()+MESI[m].slice(1)+" <span>"+y+"</span>";
-  var pan=state.mode==="pan";
-  document.getElementById("gridwrap").className="gridwrap"+(pan?" pan":"");
+  var pan=true;
+  document.getElementById("gridwrap").className="gridwrap pan";
   var h='<table class="ledger '+(pan?"pan":"com")+'"><thead><tr><th class="col-day">G</th>';
   for(var r=0;r<9;r++){var rm=ROOMS[r];h+='<th class="rh rh'+rm+(rm===CENTER_ROOM?" center-room":"")+'">'+(pan?rm:"Cam "+rm)+'</th>';}
   h+='</tr></thead><tbody>';
@@ -488,7 +498,7 @@ function renderSummary(){
   s+=card("Diretto",euro(tot.cont),"--dir");
   s+=card("Booking",euro(tot.booking),"--bk");
   s+=card("Airbnb",euro(tot.airbnb),"--air");
-  s+=card("Occupazione",occ+"%","--accent",nightsSold+" notti su "+(9*dim));
+  s+=card("Occupazione (mese)",occ+"%","--accent","Anno "+yearOcc(y)+"% · "+nightsSold+" notti");
   s+='<button class="speserow" id="speseGo"><label><span class="dotc" style="background:var(--warn)"></span>Spese del mese</label>'+
      '<span class="speseval">'+euro(spese)+' ›</span></button>';
   s+='<div class="scard big"><div class="lab">Incasso '+MESI[m]+' — utile</div>'+
@@ -594,7 +604,12 @@ function wireSheet(){
     save();closeSheet();refresh();toast(editingId?"Modifiche salvate":"Prenotazione aggiunta");
   };
   if(editingId)document.getElementById("delBtn").onclick=function(){
-    if(confirm("Eliminare questa prenotazione?")){state.bookings=state.bookings.filter(function(b){return b.id!==editingId;});save();closeSheet();refresh();toast("Prenotazione eliminata");}
+    if(confirm("Eliminare questa prenotazione? La puoi recuperare dal Cestino (in Riepilogo).")){
+      var rem=null;for(var i=0;i<state.bookings.length;i++)if(state.bookings[i].id===editingId){rem=state.bookings[i];break;}
+      if(rem){var cp=JSON.parse(JSON.stringify(rem));cp.deletedAt=fmtDate(todayISO());state.deleted.unshift(cp);state.deleted=state.deleted.slice(0,40);}
+      state.bookings=state.bookings.filter(function(b){return b.id!==editingId;});
+      save();closeSheet();refresh();toast("Eliminata · recuperabile dal Cestino");
+    }
   };
 }
 function closeSheet(){document.getElementById("scrim").classList.remove("open");}
@@ -650,7 +665,8 @@ function renderReport(){
   h+='<div class="scard big"><div class="lab">Utile di '+MESI[m]+' '+y+'</div><div class="val">'+euro(utile)+'</div><div class="sub">Incasso '+euro(incasso)+' − spese '+euro(spese)+'</div></div>';
   h+=card("Incasso",euro(incasso),"--dir",nBook+" prenotazioni");
   h+=card("Spese",euro(spese),"--warn","del mese");
-  h+=card("Occupazione",occ+"%","--accent",nightsSold+"/"+(9*dim)+" notti");
+  h+=card("Occupazione mese",occ+"%","--accent",nightsSold+"/"+(9*dim)+" notti");
+  h+=card("Occupazione anno",yearOcc(y)+"%","--accent","anno "+y);
   h+=card("Prezzo medio",euro(nightsSold?incasso/nightsSold:0),"--ink-soft","a notte");
   h+='</div>';
   h+='<div class="sectlabel">Incasso per canale</div><div class="bars">';
@@ -662,6 +678,12 @@ function renderReport(){
   h+='<div class="bar"><div class="bl"><span class="bn"><span class="dotc" style="background:var(--accent)"></span>Prenotazioni con recapito</span><span class="bv">'+withContact+' su '+total+'</span></div>'+
      '<div class="track"><div class="fill" style="width:'+(total?Math.round(withContact/total*100):0)+'%;background:var(--accent)"></div></div></div>';
   h+='<div class="note"><b>Suggerimento.</b> Chiedi sempre numero (e se possibile email) al momento della prenotazione: più recapiti raccogli, più la rubrica diventa utile per gli auguri, le offerte di bassa stagione o i messaggi ai clienti abituali. I recapiti si aggiungono direttamente dalla prenotazione.</div>';
+  if(state.deleted&&state.deleted.length){
+    h+='<div class="sectlabel">Cestino · prenotazioni eliminate</div>';
+    state.deleted.forEach(function(b,idx){
+      h+='<div class="trashrow"><div class="tx"><div class="txn">'+esc(b.guest)+' <span>· cam '+b.room+'</span></div><div class="txd">'+fmtDate(b.checkIn)+' → '+fmtDate(b.checkOut)+(b.deletedAt?' · elim. '+esc(b.deletedAt):'')+'</div></div><button class="restorebtn" data-restore="'+idx+'">Ripristina</button></div>';
+    });
+  }
   document.getElementById("repBody").innerHTML=h;
 }
 function barRow(name,cvar,val,mx,tot){
@@ -751,7 +773,6 @@ function setTab(t){
   document.getElementById("pgSpese").classList.toggle("hidden",t!=="spese");
   document.getElementById("pgRep").classList.toggle("hidden",t!=="rep");
   document.getElementById("monthbar").style.display=(t==="con")?"none":"flex";
-  document.getElementById("caltools").style.display=(t==="cal")?"flex":"none";
   Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"),function(b){b.classList.toggle("on",b.getAttribute("data-tab")===t);});
   document.getElementById("fab").style.display=(t==="con")?"none":"flex";
   refresh();
@@ -770,15 +791,11 @@ document.getElementById("ledger").addEventListener("click",function(e){
 });
 document.getElementById("prevM").onclick=function(){view.m--;if(view.m<0){view.m=11;view.y--;}refresh();};
 document.getElementById("nextM").onclick=function(){view.m++;if(view.m>11){view.m=0;view.y++;}refresh();};
-var IC_EXPAND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/></svg>';
-var IC_ZOOM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>';
-function updateModeBtn(){var b=document.getElementById("modeBtn");b.innerHTML=(state.mode==="pan"?IC_ZOOM+"Ravvicina":IC_EXPAND+"Tutte le camere");}
-document.getElementById("modeBtn").onclick=function(){state.mode=state.mode==="pan"?"com":"pan";save();updateModeBtn();renderCal();};
-updateModeBtn();
 document.getElementById("fab").onclick=function(){openFabMenu();};
 document.getElementById("scrim").addEventListener("click",function(e){if(e.target===this)closeSheet();});
 document.getElementById("cSearch").addEventListener("input",renderContacts);
 document.getElementById("speseBody").addEventListener("click",function(e){var r=e.target.closest(".exprow");if(!r)return;var id=+r.getAttribute("data-exp"),x=null;for(var i=0;i<state.expenses.length;i++)if(state.expenses[i].id===id)x=state.expenses[i];if(x)openExpenseSheet(x);});
+document.getElementById("repBody").addEventListener("click",function(e){var r=e.target.closest(".restorebtn");if(!r)return;var idx=+r.getAttribute("data-restore");var b=state.deleted[idx];if(!b)return;var cp=JSON.parse(JSON.stringify(b));delete cp.deletedAt;cp.id=state.nextId++;state.bookings.push(cp);state.deleted.splice(idx,1);save();refresh();toast("Prenotazione ripristinata");});
 Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"),function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"));};});
 
 document.getElementById("copyNums").onclick=function(){
