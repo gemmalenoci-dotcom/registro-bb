@@ -98,9 +98,10 @@ tr.spill .daycell .dn{color:var(--ink-faint);font-weight:400}
 .book .cont-mark{color:var(--grid);font-weight:900;letter-spacing:1.5px}
 .ledger.com .cont-mark{font-size:20px}
 .ledger.pan .cont-mark{font-size:15px}
-.pkflag{position:absolute;top:1px;right:2px;font-weight:800;color:#d6342a;line-height:1;z-index:2}
-.ledger.com .pkflag{font-size:16px;top:3px;right:5px}
-.ledger.pan .pkflag{font-size:12px}
+.pkbar{position:absolute;left:0;right:0;bottom:0;height:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;line-height:1;font-size:8px;z-index:2}
+.pkbar.su{background:#2b7de0}
+.pkbar.giu{background:#e08a17}
+.ledger .cell.haspk{padding-bottom:10px}
 .cell.center-room{box-shadow:inset 3px 0 0 var(--grid),inset -3px 0 0 var(--grid)}
 .ledger thead th.center-room{box-shadow:inset 3px 0 0 var(--grid),inset -3px 0 0 var(--grid)}
 
@@ -451,7 +452,7 @@ function renderCal(){
       var rcls="r"+room+(room===CENTER_ROOM?" center-room":"");
       if(b){
         var first=b.checkIn===dISO;
-        h+='<td class="cell '+rcls+'" data-book="'+b.id+'" data-room="'+room+'" data-iso="'+dISO+'">'+cellHTML(b,first,pan)+'</td>';
+        h+='<td class="cell '+rcls+(b.parking?" haspk":"")+'" data-book="'+b.id+'" data-room="'+room+'" data-iso="'+dISO+'">'+cellHTML(b,first,pan)+'</td>';
       }else{
         h+='<td class="cell empty '+rcls+'" data-room="'+room+'" data-iso="'+dISO+'"></td>';
       }
@@ -468,12 +469,12 @@ function renderCal(){
 }
 function cellHTML(b,first,pan){
   var c=b.channel;
-  var pkflag=b.parking?'<span class="pkflag">'+(b.parking==="sopra"?"↑":"↓")+'</span>':'';
-  if(!first){return '<div class="book mid"><span class="cont-mark">‖</span></div>'+pkflag;}
+  var pkbar=b.parking?'<span class="pkbar '+(b.parking==="sopra"?"su":"giu")+'">'+(b.parking==="sopra"?"▲":"▼")+'</span>':'';
+  if(!first){return '<div class="book mid"><span class="cont-mark">‖</span></div>'+pkbar;}
   var chipLabel=c==="cont"?"DIR":c==="booking"?"BK":"AIR";
   var eur=(+b.price>0)?'<span class="eur">'+(pan?Math.round(b.price):euro(b.price))+'</span>':'';
   return '<div class="book"><span class="nm">'+esc(surname(b.guest))+' <span class="ppl">'+b.people+'</span></span>'+
-    '<span class="meta"><span class="chip '+c+'">'+chipLabel+'</span>'+eur+'</span></div>'+pkflag;
+    '<span class="meta"><span class="chip '+c+'">'+chipLabel+'</span>'+eur+'</span></div>'+pkbar;
 }
 function renderLegend(){
   document.getElementById("legend").innerHTML=
@@ -482,7 +483,9 @@ function renderLegend(){
     '<span><i style="background:var(--wk-dom)"></i>Dom</span>'+
     '<span><i style="background:var(--dir)"></i>Diretto</span>'+
     '<span><i style="background:var(--bk)"></i>Booking</span>'+
-    '<span><i style="background:var(--air)"></i>Airbnb</span>';
+    '<span><i style="background:var(--air)"></i>Airbnb</span>'+
+    '<span><i style="background:#2b7de0"></i>Parch. sopra ▲</span>'+
+    '<span><i style="background:#e08a17"></i>Parch. sotto ▼</span>';
 }
 function renderSummary(){
   var y=view.y,m=view.m,dim=new Date(y,m+1,0).getDate();
