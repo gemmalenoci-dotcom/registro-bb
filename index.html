@@ -498,7 +498,7 @@ function renderSummary(){
   s+=card("Diretto",euro(tot.cont),"--dir");
   s+=card("Booking",euro(tot.booking),"--bk");
   s+=card("Airbnb",euro(tot.airbnb),"--air");
-  s+=card("Occupazione (mese)",occ+"%","--accent","Anno "+yearOcc(y)+"% · "+nightsSold+" notti");
+  s+=card("Occupazione (mese)",occ+"%","--accent",nightsSold+" notti su "+(9*dim)+" · anno "+yearOcc(y)+"%");
   s+='<button class="speserow" id="speseGo"><label><span class="dotc" style="background:var(--warn)"></span>Spese del mese</label>'+
      '<span class="speseval">'+euro(spese)+' ›</span></button>';
   s+='<div class="scard big"><div class="lab">Incasso '+MESI[m]+' — utile</div>'+
@@ -665,8 +665,8 @@ function renderReport(){
   h+='<div class="scard big"><div class="lab">Utile di '+MESI[m]+' '+y+'</div><div class="val">'+euro(utile)+'</div><div class="sub">Incasso '+euro(incasso)+' − spese '+euro(spese)+'</div></div>';
   h+=card("Incasso",euro(incasso),"--dir",nBook+" prenotazioni");
   h+=card("Spese",euro(spese),"--warn","del mese");
-  h+=card("Occupazione mese",occ+"%","--accent",nightsSold+"/"+(9*dim)+" notti");
-  h+=card("Occupazione anno",yearOcc(y)+"%","--accent","anno "+y);
+  h+=card("Occupazione mese",occ+"%","--accent",nightsSold+" notti su "+(9*dim));
+  h+=card("Occupazione anno",yearOcc(y)+"%","--accent",yearNightsSold(y)+" notti su "+(9*daysInYear(y)));
   h+=card("Prezzo medio",euro(nightsSold?incasso/nightsSold:0),"--ink-soft","a notte");
   h+='</div>';
   h+='<div class="sectlabel">Incasso per canale</div><div class="bars">';
