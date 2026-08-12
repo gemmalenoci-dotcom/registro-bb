@@ -678,11 +678,13 @@ function renderReport(){
   h+='<div class="bar"><div class="bl"><span class="bn"><span class="dotc" style="background:var(--accent)"></span>Prenotazioni con recapito</span><span class="bv">'+withContact+' su '+total+'</span></div>'+
      '<div class="track"><div class="fill" style="width:'+(total?Math.round(withContact/total*100):0)+'%;background:var(--accent)"></div></div></div>';
   h+='<div class="note"><b>Suggerimento.</b> Chiedi sempre numero (e se possibile email) al momento della prenotazione: più recapiti raccogli, più la rubrica diventa utile per gli auguri, le offerte di bassa stagione o i messaggi ai clienti abituali. I recapiti si aggiungono direttamente dalla prenotazione.</div>';
+  h+='<div class="sectlabel">Cestino · prenotazioni eliminate</div>';
   if(state.deleted&&state.deleted.length){
-    h+='<div class="sectlabel">Cestino · prenotazioni eliminate</div>';
     state.deleted.forEach(function(b,idx){
       h+='<div class="trashrow"><div class="tx"><div class="txn">'+esc(b.guest)+' <span>· cam '+b.room+'</span></div><div class="txd">'+fmtDate(b.checkIn)+' → '+fmtDate(b.checkOut)+(b.deletedAt?' · elim. '+esc(b.deletedAt):'')+'</div></div><button class="restorebtn" data-restore="'+idx+'">Ripristina</button></div>';
     });
+  }else{
+    h+='<div class="note" style="margin-top:2px">Qui finiscono le prenotazioni che elimini, così le puoi recuperare con "Ripristina". Al momento è <b>vuoto</b>.</div>';
   }
   document.getElementById("repBody").innerHTML=h;
 }
